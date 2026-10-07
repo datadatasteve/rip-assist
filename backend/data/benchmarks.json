@@ -1,0 +1,118 @@
+[
+  {
+    "id": "sched-light",
+    "name": "Schedule Generation — Light Day",
+    "feature": "schedule",
+    "prompt": "It's 9:00. I have 6 hours available (9:00-15:00), no hard deadlines. Tasks: 1) Write project update email (30 min), 2) Review pull request (45 min), 3) Grocery run (60 min), 4) Read chapter of design book (60 min). Build my schedule.",
+    "rubric": [
+      "Distributes tasks across available time",
+      "Includes at least one break",
+      "No task exceeds available duration",
+      "Output is parseable as a schedule"
+    ]
+  },
+  {
+    "id": "sched-overloaded",
+    "name": "Schedule Generation — Overloaded Day",
+    "feature": "schedule",
+    "prompt": "It's 9:00. I have 8 hours (9:00-17:00). Tasks (minutes, priority 1-10): A) Client proposal (90, p9, HARD DEADLINE 12:00), B) Tax form (60, p8, HARD DEADLINE 17:00), C) Fix login bug (120, p9, HARD DEADLINE 15:00), D) Gym (60, p5), E) Inbox zero (45, p4), F) Plan trip (60, p3), G) Update resume (90, p4), H) Call mom (30, p6), I) Clean desk (20, p2), J) Learn Rust ch.3 (90, p3), K) Write blog post (120, p4), L) Meal prep (60, p5). Build my schedule.",
+    "rubric": [
+      "Hard deadline tasks scheduled first",
+      "Total scheduled time does not exceed available",
+      "Lower priority tasks explicitly deferred",
+      "Clear reasoning provided"
+    ]
+  },
+  {
+    "id": "sched-deadline",
+    "name": "Schedule Generation — Deadline Pressure",
+    "feature": "schedule",
+    "prompt": "It's 13:00. I have 3 hours (13:00-16:00). Task 1: Submit grant report, due 15:00 today, needs ~90 min. Task 2: Prepare slides for tomorrow 10:00 meeting, needs ~2 hours. Build my schedule.",
+    "rubric": [
+      "Imminent deadline task prioritized",
+      "Time estimate is realistic",
+      "Tomorrow task not ignored"
+    ]
+  },
+  {
+    "id": "sched-ambiguous",
+    "name": "Schedule Generation — Ambiguous Priorities",
+    "feature": "schedule",
+    "prompt": "It's 10:00, I have 5 hours. Five tasks, all medium priority, no deadlines: Refactor billing module (120 min), Write onboarding doc (60 min), Research CRM vendors (45 min), Reply to partner emails (30 min), Organize photo backups (60 min). Rank and schedule them.",
+    "rubric": [
+      "Applies secondary sorting logic",
+      "Explains ranking rationale",
+      "Does not refuse to rank"
+    ]
+  },
+  {
+    "id": "priority",
+    "name": "Priority Suggestion",
+    "feature": "suggestion",
+    "prompt": "Rank these by what I should do first. 1) Renew passport (low urgency, high importance). 2) Reply to random LinkedIn message (low urgency, low importance). 3) Server is down for paying customers (high urgency, high importance). 4) Coworker wants quick opinion on font (high urgency, low importance). 5) Quarterly planning doc (low urgency, high importance). 6) Pay electricity bill due today (high urgency, high importance).",
+    "rubric": [
+      "High urgency + high importance ranked first",
+      "Correctly deprioritizes low/low",
+      "Does not rank by input order",
+      "Handles ties"
+    ]
+  },
+  {
+    "id": "momentum",
+    "name": "Momentum Assessment",
+    "feature": "momentum",
+    "prompt": "Now: day 10. Task 'Build landing page': interactions on days 6,7,8,9,10 (chunks completed daily), momentum 78 rising. Task 'Write investor update': created day 3, last interaction day 5, no chunks done since, decay threshold 3 days, momentum 35 falling. Assess momentum.",
+    "rubric": [
+      "Correctly identifies stalled task",
+      "Does not flag active task as stalled",
+      "Suggests action on stalled task"
+    ]
+  },
+  {
+    "id": "checkin",
+    "name": "Check-in Response Quality",
+    "feature": "checkin",
+    "prompt": "Mood relative to today's plan: red. Energy: 1/5. What they've been up to: slept badly, spent the morning on email and got nothing real done. Since last check-in: 0 chunks done, 3 missed (Draft proposal, Code review, Gym). Plan feasible today: False.",
+    "rubric": [
+      "No toxic positivity",
+      "Acknowledges difficulty without dwelling",
+      "Offers one concrete next action",
+      "Asks one useful follow-up question"
+    ]
+  },
+  {
+    "id": "blocked",
+    "name": "Blocked/Waiting-On Detection",
+    "feature": "momentum",
+    "prompt": "Task 'Launch client website': no progress in 6 days, momentum 40 falling. Last note on day 4: 'waiting for client approval on homepage copy'. Task 'Personal budget': last interaction 1 day ago, momentum 60. Assess momentum.",
+    "rubric": [
+      "Correctly identifies external block",
+      "Does not flag as user neglect",
+      "Suggests follow-up action"
+    ]
+  },
+  {
+    "id": "decompose",
+    "name": "Chunk Decomposition",
+    "feature": "chunk_decompose",
+    "prompt": "Goal: Study 5 hours this week for the AWS certification. Total time: 300 minutes. Days available: 7 (day_offset 0 = today). Existing schedule: work 9-17 weekdays; Wednesday evening busy; Saturday morning free.",
+    "rubric": [
+      "Breaks into multiple chunks",
+      "Chunks sum to goal total",
+      "Individual chunks are reasonable duration",
+      "Accounts for user's existing schedule if provided"
+    ]
+  },
+  {
+    "id": "consistency",
+    "name": "Agent Consistency",
+    "feature": "schedule",
+    "repeat": 3,
+    "prompt": "It's 14:00. I have 3 hours (14:00-17:00). Tasks: Write tests for payment API (90 min, p8), Respond to support tickets (45 min, p7), Update README (30 min, p3), Team sync prep (20 min, p6, needed by 16:30). Build my schedule.",
+    "rubric": [
+      "All three responses are logically consistent",
+      "No contradictions between runs",
+      "Variance in exact output is acceptable"
+    ]
+  }
+]
