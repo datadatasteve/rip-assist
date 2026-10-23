@@ -20,7 +20,7 @@ export default function Auth() {
         if (error) throw error
         if (!data.session) setMsg('Check your email to confirm your account, then sign in.')
       } else if (mode === 'reset') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + import.meta.env.BASE_URL + '#/settings' })
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + import.meta.env.BASE_URL + '?reset=1#/' })
         if (error) throw error
         setMsg('Password reset email sent.')
       } else {
