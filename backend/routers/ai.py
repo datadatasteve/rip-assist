@@ -69,7 +69,8 @@ async def suggest(body: CalOpt, user=Depends(current_user)):
         f"Current local time: {now.strftime('%a %H:%M')}.\n"
         f"{await _calendar_context(uid, settings, body.include_calendar_details)}\n"
         f"{('Lane balance: ' + s['lane_balance_flag']) if s['lane_balance_flag'] else ''}\n"
-        f"Ranked candidates (higher score = more important/momentum):\n{json.dumps(cands, indent=1)}"
+        f"Ranked candidates (higher score = more important/momentum):\n{json.dumps(cands, indent=1)}\n"
+        'Reply ONLY with JSON: {"next_action": {"title": str, "why": str, "minutes": int, "ref_id": str|null}, "alternates": [{"title": str, "why": str, "ref_id": str|null}], "note": str|null}'
     )
     out = await _run(uid, prompt, "suggestion")
     out["candidates"] = s["suggestions"]
