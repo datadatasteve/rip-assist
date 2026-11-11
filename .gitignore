@@ -234,3 +234,7 @@ vite.config.js.timestamp-*
 # rip-assist
 .venv/
 backend/.venv/
+
+# Agent skills (installed locally, not committed)
+.claude/skills/
+skills-lock.json
