@@ -53,8 +53,8 @@ export default function InstallBanner() {
         {inst.canPrompt ? 'Install rip-assist as an app for notifications and quick access.'
           : 'On iPhone: tap Share → Add to Home Screen to install (required for push notifications).'}
       </span>
-      {inst.canPrompt && <button className="small primary" onClick={inst.prompt}>Install</button>}
-      <button className="small ghost" onClick={dismiss}>Dismiss</button>
+      {inst.canPrompt && <button title="Install rip-assist as an app on this device" className="small primary" onClick={inst.prompt}>Install</button>}
+      <button title="Hide this message" className="small ghost" onClick={dismiss}>Dismiss</button>
     </div>
   )
 }

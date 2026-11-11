@@ -50,15 +50,29 @@ class AIResponse:
     interaction_id: str | None = None
     agent_config_version: str | None = None
     attempts: list[dict] = field(default_factory=list)
+    truncated: bool = False
 
     def json(self) -> dict | list | None:
         return parse_json(self.content)
 
 
 class AllProvidersFailed(Exception):
-    def __init__(self, attempts: list[dict]):
+    def __init__(self, attempts: list[dict], message: str | None = None):
         self.attempts = attempts
-        super().__init__("All AI providers failed: " + "; ".join(f"{a['provider']}/{a['model']}: {a['error']}" for a in attempts))
+        self.message = message or "The AI couldn't put together a usable answer. Try again in a moment."
+        super().__init__(self.message + " | " + "; ".join(f"{a['provider']}/{a['model']}: {a['error']}" for a in attempts))
+
+    def detail(self) -> dict:
+        """Plain message for the user; per-model attempts for Dev mode."""
+        return {"message": self.message, "attempts": self.attempts}
+
+
+# Personal features never leave the user's own machine.
+LOCAL_ONLY_FEATURES = {"checkin"}
+
+
+def is_paid(cfg: dict) -> bool:
+    return cfg["provider"] not in FREE_PROVIDERS
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +223,7 @@ async def get_agent(user_id: str, feature: str) -> tuple[str, str]:
 # calling
 # ---------------------------------------------------------------------------
 
-async def _call(cfg: dict, system: str, user: str) -> AIResponse:
+async def _call(cfg: dict, system: str, user: str, max_tokens: int = 1500) -> AIResponse:
     provider = cfg["provider"]
     model = cfg["model_name"]
     headers = {"Content-Type": "application/json"}
@@ -241,7 +255,7 @@ async def _call(cfg: dict, system: str, user: str) -> AIResponse:
         "model": model,
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "temperature": 0.4,
-        "max_tokens": 1500,
+        "max_tokens": max_tokens,
     }
     t0 = time.perf_counter()
     async with httpx.AsyncClient(timeout=timeout, proxy=_proxy_for(url)) as c:
@@ -250,12 +264,15 @@ async def _call(cfg: dict, system: str, user: str) -> AIResponse:
     if r.status_code >= 400:
         raise RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
     data = r.json()
-    content = data["choices"][0]["message"].get("content") or ""
+    choice = data["choices"][0]
+    content = choice["message"].get("content") or ""
     usage = data.get("usage") or {}
     inp = int(usage.get("prompt_tokens") or 0)
     out = int(usage.get("completion_tokens") or 0)
-    return AIResponse(content=content, provider=provider, model=model, latency_ms=latency,
+    resp = AIResponse(content=content, provider=provider, model=model, latency_ms=latency,
                       input_tokens=inp, output_tokens=out, cost_usd=_cost(provider, inp, out))
+    resp.truncated = choice.get("finish_reason") == "length"
+    return resp
 
 
 async def _log(user_id: str, cfg: dict, feature: str, system: str, user: str, version: str,
@@ -286,34 +303,66 @@ async def _log(user_id: str, cfg: dict, feature: str, system: str, user: str, ve
 
 
 async def complete(user_id: str, user: str, feature: str, *, system: str | None = None,
-                   config_id: str | None = None) -> AIResponse:
+                   config_id: str | None = None, want_json: bool = False) -> AIResponse:
     """Run a completion with provider fallback. If `system` is None, the active
-    agent config for the feature is used (and its version tagged)."""
+    agent config for the feature is used (and its version tagged).
+
+    Rules:
+    - Features in LOCAL_ONLY_FEATURES only ever use local (Ollama) models.
+    - The first model in the user's order is the one they chose and is always allowed.
+      Fallback never switches to a paid model on its own.
+    - With want_json, a reply that is cut off or isn't valid JSON is retried once on the
+      same model with more room, then counts as a failure and the next model is tried.
+    """
     if system is None:
         system, version = await get_agent(user_id, feature)
     else:
         version = (await get_agent(user_id, feature))[1]
 
     registry = await get_registry(user_id)
+    skipped_paid: list[dict] = []
     if config_id:
         candidates = [c for c in registry if c["id"] == config_id]
     else:
         candidates = order_candidates(registry, feature)
+        if feature in LOCAL_ONLY_FEATURES:
+            candidates = [c for c in candidates if c["provider"] == "ollama"]
+            if not candidates:
+                raise AllProvidersFailed([{"provider": "-", "model": "-", "error": "no local model enabled"}],
+                                         "No AI reply this time: check-ins only use the AI on your own computer, and none is set up.")
+        else:
+            skipped_paid = [c for c in candidates[1:] if is_paid(c)]
+            candidates = candidates[:1] + [c for c in candidates[1:] if not is_paid(c)]
     if not candidates:
-        raise AllProvidersFailed([{"provider": "-", "model": "-", "error": "no enabled providers"}])
+        raise AllProvidersFailed([{"provider": "-", "model": "-", "error": "no enabled providers"}],
+                                 "No AI models are turned on. Turn one on in Dev → Model registry.")
 
     attempts = []
     for cfg in candidates:
-        t0 = time.perf_counter()
-        try:
-            resp = await _call(cfg, system, user)
-        except Exception as e:  # noqa: BLE001 — fall through to next provider
-            err = str(e)[:300]
-            attempts.append({"provider": cfg["provider"], "model": cfg["model_name"], "error": err})
-            await _log(user_id, cfg, feature, system, user, version, None, err, int((time.perf_counter() - t0) * 1000))
-            continue
-        resp.agent_config_version = version
-        resp.attempts = attempts
-        resp.interaction_id = await _log(user_id, cfg, feature, system, user, version, resp, None, resp.latency_ms)
-        return resp
+        for max_tokens in ((1500, 4000) if want_json else (1500,)):
+            t0 = time.perf_counter()
+            try:
+                resp = await _call(cfg, system, user, max_tokens=max_tokens)
+                if want_json and (resp.truncated or parse_json(resp.content) is None):
+                    why = "reply was cut off" if resp.truncated else "reply wasn't in the expected format"
+                    attempts.append({"provider": cfg["provider"], "model": cfg["model_name"], "error": why,
+                                     "raw": resp.content[:2000]})
+                    await _log(user_id, cfg, feature, system, user, version, None, f"{why}: {resp.content[:200]}", resp.latency_ms)
+                    continue  # retry once with more room, then move to the next model
+            except Exception as e:  # noqa: BLE001 — fall through to next provider
+                err = str(e)[:300]
+                attempts.append({"provider": cfg["provider"], "model": cfg["model_name"], "error": err})
+                await _log(user_id, cfg, feature, system, user, version, None, err, int((time.perf_counter() - t0) * 1000))
+                break  # connection/HTTP errors don't improve with a retry; next model
+            resp.agent_config_version = version
+            resp.attempts = attempts
+            resp.interaction_id = await _log(user_id, cfg, feature, system, user, version, resp, None, resp.latency_ms)
+            return resp
+
+    if feature in LOCAL_ONLY_FEATURES:
+        raise AllProvidersFailed(attempts, "No AI reply this time: your home AI isn't reachable right now. Your check-in was saved.")
+    if not config_id and skipped_paid:
+        names = ", ".join(sorted({c["provider"] for c in skipped_paid}))
+        raise AllProvidersFailed(attempts, f"The free AI models couldn't answer. Paid models ({names}) were not used, "
+                                           "so nothing was charged. Try again in a moment.")
     raise AllProvidersFailed(attempts)

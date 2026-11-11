@@ -88,7 +88,7 @@ async def ai_reply(checkin_id: str, user=Depends(current_user)):
     try:
         r = await ai_provider.complete(uid, prompt, "checkin")
     except ai_provider.AllProvidersFailed as e:
-        raise HTTPException(503, str(e))
+        raise HTTPException(503, e.detail())
     return {"reply": r.content.strip(), "interaction_id": r.interaction_id, "provider": r.provider, "model": r.model}
 
 

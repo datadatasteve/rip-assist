@@ -47,16 +47,16 @@ export default function LaneForm({ lane, onClose }) {
         <label className="field"><span>Color</span>
           <div className="row">
             {LANE_COLORS.map((c) => (
-              <button type="button" key={c} onClick={() => set('color')(c)} aria-label={`color ${c}`}
+              <button title={`Use this color`} type="button" key={c} onClick={() => set('color')(c)} aria-label={`color ${c}`}
                 style={{ width: 30, height: 30, minHeight: 0, padding: 0, borderRadius: 999, background: c, outline: f.color === c ? '3px solid var(--text)' : 'none', outlineOffset: 2 }} />
             ))}
           </div>
         </label>
         {err && <div className="error">{err}</div>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          {lane && <button type="button" onClick={archive}>{lane.archived_at ? 'Unarchive' : 'Archive'}</button>}
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button className="primary">Save</button>
+          {lane && <button title={lane.archived_at ? 'Bring this lane back' : 'Hide this lane without deleting it'} type="button" onClick={archive}>{lane.archived_at ? 'Unarchive' : 'Archive'}</button>}
+          <button title="Close without saving" type="button" onClick={onClose}>Cancel</button>
+          <button title="Save this lane" className="primary">Save</button>
         </div>
       </form>
     </Modal>

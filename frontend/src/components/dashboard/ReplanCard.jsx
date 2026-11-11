@@ -3,6 +3,7 @@ import { useData } from '../../hooks/useData'
 import { ai } from '../../lib/ai'
 import { db } from '../../lib/supabase'
 import Rating from '../shared/Rating'
+import AiError from '../shared/AiError'
 
 function todayAt(hhmm) {
   const [h, m] = hhmm.split(':').map(Number)
@@ -21,7 +22,7 @@ export default function ReplanCard({ recommended, feasibility, onDismiss }) {
 
   async function run() {
     setBusy(true); setErr(null)
-    try { setRes(await ai.replan({ include_calendar_details: useCal })) } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    try { setRes(await ai.replan({ include_calendar_details: useCal })) } catch (e) { setErr(e) } finally { setBusy(false) }
   }
 
   async function apply() {
@@ -40,23 +41,23 @@ export default function ReplanCard({ recommended, feasibility, onDismiss }) {
       }
       if (res.interaction_id) await db.update('ai_interactions', res.interaction_id, { outcome_followed: true }).catch(() => {})
       setApplied(true)
-    } catch (e) { setErr(e.message) }
+    } catch (e) { setErr(e) }
   }
 
   return (
     <div className={`card`} style={recommended ? { borderColor: 'var(--yellow)' } : undefined}>
       <div className="card-head">
         <h2>{recommended ? "Today's plan doesn't fit" : 'Re-plan today'}</h2>
-        {recommended && <button className="small ghost" onClick={onDismiss}>Dismiss</button>}
+        {recommended && <button title="Hide this suggestion" className="small ghost" onClick={onDismiss}>Dismiss</button>}
       </div>
       {feasibility && (
         <small>Free {feasibility.free_minutes}m · scheduled {feasibility.remaining_scheduled_minutes}m{feasibility.infeasible ? ` · over by ${feasibility.over_by_minutes}m` : ''}</small>
       )}
       <div className="row" style={{ marginTop: 8 }}>
-        <button className={recommended ? 'primary' : ''} onClick={run} disabled={busy}>{busy ? 'Planning…' : res ? 'Re-plan again' : '✨ Suggest a new plan'}</button>
+        <button title="Ask the AI for a plan for the rest of today" className={recommended ? 'primary' : ''} onClick={run} disabled={busy}>{busy ? 'Planning…' : res ? 'Re-plan again' : '✨ Suggest a new plan'}</button>
         <label className="check"><input type="checkbox" checked={useCal} onChange={(e) => setUseCal(e.target.checked)} /> include calendar event details</label>
       </div>
-      {err && <div className="error">{err}</div>}
+      {err && <AiError error={err} />}
       {res && (
         <div className="stack" style={{ marginTop: 10 }}>
           {res.parsed?.blocks ? (
@@ -70,9 +71,9 @@ export default function ReplanCard({ recommended, feasibility, onDismiss }) {
               {res.parsed.deferred?.length > 0 && <small>Deferred: {res.parsed.deferred.map((d) => d.title).join(', ')}</small>}
               {res.parsed.reasoning && <small>{res.parsed.reasoning}</small>}
             </div>
-          ) : <pre>{res.content}</pre>}
+          ) : <AiError raw={res.content} />}
           <div className="row">
-            <button className="primary" onClick={apply} disabled={applied || !res.parsed?.blocks}>{applied ? 'Applied ✓' : 'Apply to my chunks'}</button>
+            <button title="Move your chunks to the times in this plan" className="primary" onClick={apply} disabled={applied || !res.parsed?.blocks}>{applied ? 'Applied ✓' : 'Apply to my chunks'}</button>
             <small>{res.provider} · {res.model}</small>
           </div>
           <Rating key={res.interaction_id} interactionId={res.interaction_id} showOutcome={!applied} />

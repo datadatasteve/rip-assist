@@ -20,22 +20,22 @@ export default function Lanes() {
 
   return (
     <>
-      <div className="topbar"><h1>Lanes</h1><button className="primary" onClick={() => setCreating(true)}>+ Lane</button></div>
+      <div className="topbar"><h1>Lanes</h1><button title="Create a new lane (an area of life or work)" className="primary" onClick={() => setCreating(true)}>+ Lane</button></div>
       <div className="lane-toolbar">
         <div className="seg">
           {['day', 'week', 'month'].map((z) => (
-            <button key={z} className={zoom === z ? 'selected' : ''} onClick={() => setZoom(z)}>{z[0].toUpperCase() + z.slice(1)}</button>
+            <button title={`Show the ${z} view`} key={z} className={zoom === z ? 'selected' : ''} onClick={() => setZoom(z)}>{z[0].toUpperCase() + z.slice(1)}</button>
           ))}
         </div>
-        <button className="small" onClick={() => shift(-1)} aria-label="Previous">‹</button>
-        <button className="small" onClick={() => setDate(new Date())}>Today</button>
-        <button className="small" onClick={() => shift(1)} aria-label="Next">›</button>
+        <button title="Go back" className="small" onClick={() => shift(-1)} aria-label="Previous">‹</button>
+        <button title="Jump to today" className="small" onClick={() => setDate(new Date())}>Today</button>
+        <button title="Go forward" className="small" onClick={() => shift(1)} aria-label="Next">›</button>
         <b>{label}</b>
       </div>
       <LaneTimeline zoom={zoom} date={date} />
       {archived.length > 0 && (
         <div className="section">
-          <button className="small ghost" onClick={() => setShowArchived((s) => !s)}>{showArchived ? '▾' : '▸'} Archived lanes ({archived.length})</button>
+          <button title="Show or hide archived lanes" className="small ghost" onClick={() => setShowArchived((s) => !s)}>{showArchived ? '▾' : '▸'} Archived lanes ({archived.length})</button>
           {showArchived && <div className="list">{archived.map((l) => <ArchivedLane key={l.id} lane={l} />)}</div>}
         </div>
       )}

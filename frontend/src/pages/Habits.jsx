@@ -18,7 +18,7 @@ export default function Habits() {
 
   return (
     <>
-      <div className="topbar"><h1>Habits</h1><button className="primary" onClick={() => setEdit({})}>+ Habit</button></div>
+      <div className="topbar"><h1>Habits</h1><button title="Create a new habit to track" className="primary" onClick={() => setEdit({})}>+ Habit</button></div>
       <div className="card">
         <div className="ring-wrap">
           <Ring value={doneCount} max={due.length} size={84} label="Habits done today" />
@@ -67,7 +67,7 @@ function HabitCard({ habit, logs, onEdit }) {
           <b className="truncate">{habit.title}</b><br />
           <small>{freq}{lane ? ` · ${lane.icon || ''} ${lane.name}` : ''} · 🔥 {streak} (best {Math.max(habit.longest_streak || 0, streak)})</small>
         </div>
-        <button className="small ghost" onClick={onEdit} aria-label="Edit habit">✎</button>
+        <button title="Edit this habit" className="small ghost" onClick={onEdit} aria-label="Edit habit">✎</button>
       </div>
       <div className="week-grid" style={{ marginTop: 10 }}>
         {days.map((d) => {
@@ -116,7 +116,7 @@ function HabitForm({ habit, onClose }) {
         {f.frequency === 'custom' && (
           <div className="row">
             {DOW.map((d, i) => (
-              <button type="button" key={d} className={`small${f.custom_days.includes(i) ? ' selected' : ''}`}
+              <button title="Include this day in the schedule" type="button" key={d} className={`small${f.custom_days.includes(i) ? ' selected' : ''}`}
                 onClick={() => set('custom_days')(f.custom_days.includes(i) ? f.custom_days.filter((x) => x !== i) : [...f.custom_days, i].sort())}>{d}</button>
             ))}
           </div>
@@ -124,9 +124,9 @@ function HabitForm({ habit, onClose }) {
         <LaneSelect value={f.lane_id} onChange={set('lane_id')} />
         {err && <div className="error">{err}</div>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          {habit && <button type="button" className="danger" onClick={archive}>Archive</button>}
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button className="primary">Save</button>
+          {habit && <button title="Hide this habit without deleting its history" type="button" className="danger" onClick={archive}>Archive</button>}
+          <button title="Close without saving" type="button" onClick={onClose}>Cancel</button>
+          <button title="Save this habit" className="primary">Save</button>
         </div>
       </form>
     </Modal>

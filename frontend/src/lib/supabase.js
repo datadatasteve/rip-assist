@@ -10,6 +10,10 @@ export const supabase = createClient(url || 'http://localhost:54321', key || 'mi
   realtime: { params: { eventsPerSecond: 20 } },
 })
 
+// The reset-link sign-in can fire before React subscribes, so record it here.
+export const recovery = { pending: /type=recovery/.test(window.location.hash) }
+supabase.auth.onAuthStateChange((evt) => { if (evt === 'PASSWORD_RECOVERY') recovery.pending = true })
+
 function check({ data, error }) {
   if (error) throw new Error(error.message)
   return data

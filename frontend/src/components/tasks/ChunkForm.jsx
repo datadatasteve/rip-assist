@@ -57,14 +57,14 @@ export default function ChunkForm({ chunk, parent, onClose }) {
         </div>
         <div className="row">
           {[15, 25, 45, 60, 90].map((m) => (
-            <button type="button" key={m} className={`small${Number(f.duration_minutes) === m ? ' selected' : ''}`} onClick={() => set('duration_minutes')(String(m))}>{m}m</button>
+            <button title={`Set the length to ${m} minutes`} type="button" key={m} className={`small${Number(f.duration_minutes) === m ? ' selected' : ''}`} onClick={() => set('duration_minutes')(String(m))}>{m}m</button>
           ))}
         </div>
         <LaneSelect label="Lane override (optional)" value={f.lane_id} onChange={set('lane_id')} />
         {err && <div className="error">{err}</div>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button className="primary">Save</button>
+          <button title="Close without saving" type="button" onClick={onClose}>Cancel</button>
+          <button title="Save this chunk" className="primary">Save</button>
         </div>
       </form>
     </Modal>

@@ -15,7 +15,7 @@ export default function ChunkRow({ chunk, showParent }) {
 
   return (
     <div className="list-item">
-      <button className={`small icon${done ? ' selected' : ''}`} onClick={() => run(done ? reopenChunk : completeChunk)} aria-label={done ? 'Mark not done' : 'Complete chunk'}>
+      <button title={done ? 'Mark not done' : 'Mark this chunk done'} className={`small icon${done ? ' selected' : ''}`} onClick={() => run(done ? reopenChunk : completeChunk)} aria-label={done ? 'Mark not done' : 'Complete chunk'}>
         {done ? '✓' : '○'}
       </button>
       <div className="grow">
@@ -28,9 +28,9 @@ export default function ChunkRow({ chunk, showParent }) {
         </small>
         {err && <div className="error">{err}</div>}
       </div>
-      {!done && !skipped && <button className="small ghost" onClick={() => run(skipChunk)}>Skip</button>}
-      <button className="small ghost" onClick={() => setEdit(true)} aria-label="Edit chunk">✎</button>
-      <button className="small ghost danger" onClick={() => confirm('Delete this chunk?') && run(deleteChunk)} aria-label="Delete chunk">🗑</button>
+      {!done && !skipped && <button title="Skip this chunk for now" className="small ghost" onClick={() => run(skipChunk)}>Skip</button>}
+      <button title="Edit this chunk" className="small ghost" onClick={() => setEdit(true)} aria-label="Edit chunk">✎</button>
+      <button title="Delete this chunk" className="small ghost danger" onClick={() => confirm('Delete this chunk?') && run(deleteChunk)} aria-label="Delete chunk">🗑</button>
       {edit && <ChunkForm chunk={chunk} onClose={() => setEdit(false)} />}
     </div>
   )

@@ -17,8 +17,8 @@ export default function Settings() {
   return (
     <>
       <div className="topbar"><h1>Settings</h1></div>
-      {gcal === 'connected' && <div className="banner">Google Calendar connected. <button className="small ghost" onClick={() => setParams({})}>✕</button></div>}
-      {gcal === 'error' && <div className="banner danger">Google Calendar connection failed: {params.get('reason')} <button className="small ghost" onClick={() => setParams({})}>✕</button></div>}
+      {gcal === 'connected' && <div className="banner">Google Calendar connected. <button title="Close this message" className="small ghost" onClick={() => setParams({})}>✕</button></div>}
+      {gcal === 'error' && <div className="banner danger">Google Calendar connection failed: {params.get('reason')} <button title="Close this message" className="small ghost" onClick={() => setParams({})}>✕</button></div>}
       <div className="grid grid-2">
         <div className="stack" style={{ gap: 12 }}>
           <Account user={user} />
@@ -41,7 +41,7 @@ function Account({ user }) {
     <div className="card">
       <h2>Account</h2>
       <p><small>Signed in as</small><br /><b>{user?.email}</b></p>
-      <button onClick={() => supabase.auth.signOut()}>Sign out</button>
+      <button title="Sign out of rip-assist on this device" onClick={() => supabase.auth.signOut()}>Sign out</button>
     </div>
   )
 }
@@ -66,7 +66,7 @@ function Preferences() {
           <input key={settings.timezone} defaultValue={settings.timezone} onBlur={(e) => e.target.value !== settings.timezone && save({ timezone: e.target.value.trim() })} />
         </label>
         <small>Detected on this device: {Intl.DateTimeFormat().resolvedOptions().timeZone}{' '}
-          <button className="small ghost" onClick={() => save({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}>use</button></small>
+          <button title="Use this device's time zone" className="small ghost" onClick={() => save({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}>use</button></small>
         <div className="form-row">
           <Input label="Workday start" type="time" value={String(settings.workday_start).slice(0, 5)} onChange={(v) => save({ workday_start: v })} />
           <Input label="Workday end" type="time" value={String(settings.workday_end).slice(0, 5)} onChange={(v) => save({ workday_end: v })} />
@@ -111,13 +111,13 @@ function Checkins() {
           <div className="row">
             {times.length === 0 && <small>None</small>}
             {times.map((t) => (
-              <span key={t} className="pill accent">{t} <button className="small ghost" style={{ minHeight: 0, padding: 0 }} onClick={() => save({ checkin_times: times.filter((x) => x !== t) })} aria-label={`Remove ${t}`}>✕</button></span>
+              <span key={t} className="pill accent">{t} <button title="Remove this check-in time" className="small ghost" style={{ minHeight: 0, padding: 0 }} onClick={() => save({ checkin_times: times.filter((x) => x !== t) })} aria-label={`Remove ${t}`}>✕</button></span>
             ))}
           </div>
         </label>
         <div className="row">
           <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)} style={{ width: 140 }} />
-          <button onClick={() => !times.includes(newTime) && save({ checkin_times: [...times, newTime].sort() })}>Add time</button>
+          <button title="Add this check-in time" onClick={() => !times.includes(newTime) && save({ checkin_times: [...times, newTime].sort() })}>Add time</button>
         </div>
         <hr className="divider" />
         <div className="form-row">
@@ -169,8 +169,8 @@ function Notifications() {
         <div className="form">
           <small>This device: {sub ? 'subscribed' : 'not subscribed'} · permission {perm}</small>
           {!sub ? (
-            <div className="row"><input value={label} onChange={(e) => setLabel(e.target.value)} style={{ flex: 1, minWidth: 140 }} aria-label="Device label" /><button className="primary" onClick={enable}>Enable push here</button></div>
-          ) : <button onClick={disable}>Disable push on this device</button>}
+            <div className="row"><input value={label} onChange={(e) => setLabel(e.target.value)} style={{ flex: 1, minWidth: 140 }} aria-label="Device label" /><button title="Turn on notifications for this device" className="primary" onClick={enable}>Enable push here</button></div>
+          ) : <button title="Stop notifications on this device" onClick={disable}>Disable push on this device</button>}
         </div>
       )}
       <hr className="divider" />
@@ -182,7 +182,7 @@ function Notifications() {
           <option value="waiting_followup">Waiting-on follow-up</option>
           <option value="plan_infeasible">Plan infeasible</option>
         </select>
-        <button onClick={test}>Send</button>
+        <button title="Send a test notification" onClick={test}>Send</button>
       </div>
       {msg && <small>{msg}</small>}
       {subs.rows.length > 0 && (
@@ -194,7 +194,7 @@ function Notifications() {
               <div key={s.id} className="list-item">
                 <div className="grow truncate">{s.device_label || 'device'}{sub && s.subscription?.endpoint === sub.endpoint ? ' (this device)' : ''}</div>
                 <small>{relative(s.created_at)}</small>
-                <button className="small ghost danger" onClick={() => supabase.from('push_subscriptions').delete().eq('id', s.id).then(() => subs.reload())}>Remove</button>
+                <button title="Remove this device" className="small ghost danger" onClick={() => supabase.from('push_subscriptions').delete().eq('id', s.id).then(() => subs.reload())}>Remove</button>
               </div>
             ))}
           </div>
@@ -235,11 +235,11 @@ function Calendar() {
       <h2>Google Calendar</h2>
       <small>Read-only. Only event times and titles are stored; nothing is sent to AI unless you tick "include calendar details" on a request.</small>
       {!conn ? (
-        <div className="row" style={{ marginTop: 10 }}><button className="primary" onClick={connect}>Connect Google Calendar</button></div>
+        <div className="row" style={{ marginTop: 10 }}><button title="Link your Google Calendar (read-only)" className="primary" onClick={connect}>Connect Google Calendar</button></div>
       ) : (
         <div className="form" style={{ marginTop: 10 }}>
           <small>Connected{conn.google_email ? ` as ${conn.google_email}` : ''} · last sync {relative(conn.last_synced_at)}</small>
-          <div className="row"><button onClick={sync} disabled={busy}>{busy ? 'Syncing…' : 'Sync now'}</button><button className="danger" onClick={disconnect}>Disconnect</button></div>
+          <div className="row"><button title="Pull the latest events from Google Calendar" onClick={sync} disabled={busy}>{busy ? 'Syncing…' : 'Sync now'}</button><button className="danger" onClick={disconnect}>Disconnect</button></div>
           <small>Calendar → lane</small>
           <div className="list">
             {(conn.calendars || []).map((c) => (
@@ -267,7 +267,7 @@ function Install() {
     <div className="card">
       <h2>App</h2>
       {inst.standalone ? <small>Running as an installed app ✓</small>
-        : inst.canPrompt ? <button className="primary" onClick={inst.prompt}>Install rip-assist</button>
+        : inst.canPrompt ? <button title="Install rip-assist as an app on this device" className="primary" onClick={inst.prompt}>Install rip-assist</button>
           : inst.ios ? <small>Safari → Share → Add to Home Screen.</small>
             : <small>Use your browser's "Install app" option (Chrome/Edge address bar).</small>}
     </div>
@@ -291,8 +291,8 @@ function Developer() {
       <h2>Developer</h2>
       <label className="check"><input type="checkbox" checked={Boolean(settings.dev_mode)} onChange={(e) => updateSettings({ dev_mode: e.target.checked })} /> Show Dev dashboard in nav</label>
       <div className="row" style={{ marginTop: 8 }}>
-        <button onClick={() => nav('/dev')}>Open /dev</button>
-        <button onClick={check}>Check backend</button>
+        <button title="Open developer tools" onClick={() => nav('/dev')}>Open /dev</button>
+        <button title="Check that the server is running" onClick={check}>Check backend</button>
       </div>
       <small className="mono">{API_URL}</small>
       {health && <pre className="mono" style={{ marginTop: 8, fontSize: 11 }}>{JSON.stringify(health, null, 1)}</pre>}

@@ -5,6 +5,7 @@ import { api } from '../../lib/api'
 import { minutesLabel } from '../../lib/time'
 import Rating from '../shared/Rating'
 import ItemDetail from '../tasks/ItemDetail'
+import AiError from '../shared/AiError'
 
 // Top suggestion (engine-ranked, instant) + optional AI "next best action".
 export default function SuggestionCard() {
@@ -17,7 +18,7 @@ export default function SuggestionCard() {
   const [open, setOpen] = useState(null)
 
   const load = useCallback(() => {
-    api('/api/suggestions?limit=5').then((r) => { setS(r); setErr(null) }).catch((e) => setErr(e.message))
+    api('/api/suggestions?limit=5').then((r) => { setS(r); setErr(null) }).catch((e) => setErr(e))
   }, [])
   // refresh when underlying data changes (debounced by React batching)
   const sig = `${tasks.rows.length}-${goals.rows.length}-${chunks.rows.length}-${chunks.rows.filter((c) => c.completed_at).length}`
@@ -25,14 +26,14 @@ export default function SuggestionCard() {
 
   async function askAI() {
     setBusy(true); setErr(null)
-    try { setAiRes(await ai.suggest({ include_calendar_details: useCal })) } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    try { setAiRes(await ai.suggest({ include_calendar_details: useCal })) } catch (e) { setErr(e) } finally { setBusy(false) }
   }
 
   const top = s?.suggestions?.[0]
   return (
     <div className="card">
-      <div className="card-head"><h2>Next best action</h2><button className="small ghost" onClick={load} aria-label="Refresh">↻</button></div>
-      {err && <div className="error">Backend: {err}</div>}
+      <div className="card-head"><h2>Next best action</h2><button title="Refresh suggestions" className="small ghost" onClick={load} aria-label="Refresh">↻</button></div>
+      {err && <AiError error={err} />}
       {s && !top && <div className="empty">Nothing active. Add a task to get suggestions.</div>}
       {top && (
         <div className="list-item clickable" onClick={() => setOpen({ kind: top.ref_type, id: top.ref_id })} style={{ padding: '6px 0' }}>
@@ -59,7 +60,7 @@ export default function SuggestionCard() {
       {s?.lane_balance_flag && <div className="banner warn" style={{ marginTop: 8 }}>{s.lane_balance_flag}</div>}
       <hr className="divider" />
       <div className="row">
-        <button onClick={askAI} disabled={busy}>{busy ? 'Thinking…' : '✨ Ask AI'}</button>
+        <button title="Ask the AI what to do next" onClick={askAI} disabled={busy}>{busy ? 'Thinking…' : '✨ Ask AI'}</button>
         <label className="check"><input type="checkbox" checked={useCal} onChange={(e) => setUseCal(e.target.checked)} /> include calendar event details</label>
       </div>
       {aiRes && (
@@ -71,7 +72,7 @@ export default function SuggestionCard() {
               {aiRes.parsed.alternates?.length > 0 && <small>Alternates: {aiRes.parsed.alternates.map((a) => a.title).join(' · ')}</small>}
               {aiRes.parsed.note && <p><small>{aiRes.parsed.note}</small></p>}
             </>
-          ) : <pre>{aiRes.content}</pre>}
+          ) : <AiError raw={aiRes.content} />}
           <small className="muted">{aiRes.provider} · {aiRes.model} · {aiRes.latency_ms}ms{aiRes.fallback_attempts?.length ? ` · fell back after ${aiRes.fallback_attempts.length}` : ''}</small>
           <hr className="divider" />
           <Rating key={aiRes.interaction_id} interactionId={aiRes.interaction_id} />

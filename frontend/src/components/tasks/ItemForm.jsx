@@ -65,8 +65,8 @@ export default function ItemForm({ kind, item, defaults = {}, onClose, onSaved }
         </div>
         {err && <div className="error">{err}</div>}
         <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <button type="button" onClick={onClose}>Cancel</button>
-          <button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
+          <button title="Close without saving" type="button" onClick={onClose}>Cancel</button>
+          <button title="Save changes" className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button>
         </div>
       </form>
     </Modal>

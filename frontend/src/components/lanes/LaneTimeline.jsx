@@ -177,7 +177,7 @@ export default function LaneTimeline({ zoom, date }) {
         })
         if (cl.items.length > 1) {
           blocks.push(
-            <button key={key + 'c'} className="small ghost" style={{ position: 'absolute', left: x(cl.e) + 2, top: 32, minHeight: 20, padding: '0 4px', fontSize: 11 }}
+            <button title="Show the overlapping items" key={key + 'c'} className="small ghost" style={{ position: 'absolute', left: x(cl.e) + 2, top: 32, minHeight: 20, padding: '0 4px', fontSize: 11 }}
               onClick={() => setExpanded((s) => { const n = new Set(s); n.delete(key); return n })}>collapse</button>,
           )
         }
@@ -300,11 +300,11 @@ function ChunkQuick({ chunk, onClose, onOpenParent }) {
           {parent?.item ? ` · ${parent.item.title}` : ''}
         </small>
         <div className="row">
-          {!chunk.completed_at && <button className="primary" onClick={() => run(completeChunk)}>✓ Complete</button>}
-          {!chunk.completed_at && !chunk.skipped_at && <button onClick={() => run(skipChunk)}>Skip</button>}
-          {(chunk.completed_at || chunk.skipped_at) && <button onClick={() => run(reopenChunk)}>Reopen</button>}
-          <button onClick={() => setEdit(true)}>Edit / reschedule</button>
-          {parent?.item && <button onClick={() => onOpenParent({ kind: parent.kind, id: parent.item.id })}>Open {parent.kind}</button>}
+          {!chunk.completed_at && <button title="Mark this chunk as done" className="primary" onClick={() => run(completeChunk)}>✓ Complete</button>}
+          {!chunk.completed_at && !chunk.skipped_at && <button title="Skip this chunk for now" onClick={() => run(skipChunk)}>Skip</button>}
+          {(chunk.completed_at || chunk.skipped_at) && <button title="Make this chunk active again" onClick={() => run(reopenChunk)}>Reopen</button>}
+          <button title="Change this chunk's details or time" onClick={() => setEdit(true)}>Edit / reschedule</button>
+          {parent?.item && <button title="Open the task or goal this chunk belongs to" onClick={() => onOpenParent({ kind: parent.kind, id: parent.item.id })}>Open {parent.kind}</button>}
         </div>
         {err && <div className="error">{err}</div>}
       </div>

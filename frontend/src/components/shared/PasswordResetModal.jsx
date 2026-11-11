@@ -32,7 +32,7 @@ export default function PasswordResetModal() {
             <input type="password" autoComplete="new-password" minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           </label>
           {err && <div className="error">{err}</div>}
-          <button className="primary" disabled={busy}>{busy ? '…' : 'Update password'}</button>
+          <button title="Save your new password" className="primary" disabled={busy}>{busy ? '…' : 'Update password'}</button>
         </form>
       </div>
     </div>

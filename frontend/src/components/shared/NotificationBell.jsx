@@ -38,14 +38,14 @@ export default function NotificationBell() {
 
   return (
     <div className="bell" ref={ref}>
-      <button className="ghost icon" onClick={() => setOpen((o) => !o)} aria-label={`Notifications (${unread.length} unread)`}>
+      <button title="Notifications" className="ghost icon" onClick={() => setOpen((o) => !o)} aria-label={`Notifications (${unread.length} unread)`}>
         🔔{unread.length > 0 && <span className="count">{unread.length}</span>}
       </button>
       {open && (
         <div className="popover">
           <div className="row-between" style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)' }}>
             <b>Notifications</b>
-            <button className="small ghost" onClick={markAll} disabled={!unread.length}>Mark all read</button>
+            <button title="Mark every notification as read" className="small ghost" onClick={markAll} disabled={!unread.length}>Mark all read</button>
           </div>
           {notifications.rows.length === 0 && <div className="empty">Nothing yet.</div>}
           {notifications.rows.slice(0, 30).map((n) => (

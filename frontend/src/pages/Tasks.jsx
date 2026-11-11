@@ -34,12 +34,12 @@ export default function Tasks() {
       <div className="topbar">
         <h1>Goals & tasks</h1>
         <div className="row">
-          <button onClick={() => setCreate('goal')}>+ Goal</button>
-          <button className="primary" onClick={() => setCreate('task')}>+ Task</button>
+          <button title="Create a goal (a bigger outcome made of tasks)" onClick={() => setCreate('goal')}>+ Goal</button>
+          <button title="Create a task" className="primary" onClick={() => setCreate('task')}>+ Task</button>
         </div>
       </div>
       {dead.length > 0 && status === 'open' && (
-        <div className="banner danger">{dead.length} item{dead.length > 1 ? 's have' : ' has'} stalled out and need{dead.length > 1 ? '' : 's'} a decision. <button className="small" onClick={() => setStatus('dead')}>Review</button></div>
+        <div className="banner danger">{dead.length} item{dead.length > 1 ? 's have' : ' has'} stalled out and need{dead.length > 1 ? '' : 's'} a decision. <button title="Show the stalled items" className="small" onClick={() => setStatus('dead')}>Review</button></div>
       )}
       <div className="form-row" style={{ marginBottom: 12 }}>
         <Select value={status} onChange={setStatus} options={STATUSES} aria-label="Status filter" />

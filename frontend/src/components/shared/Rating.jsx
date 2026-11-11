@@ -29,22 +29,22 @@ export default function Rating({ interactionId, initialMajor = null, initialSub 
       {pending == null ? (
         <div className="row">
           {RATING_OPTIONS.map((m) => (
-            <button key={m} className={`small${major === m ? ' selected' : ''}`} onClick={() => tapMajor(m)}>{m}</button>
+            <button title={`Rate this answer ${m} out of 5`} key={m} className={`small${major === m ? ' selected' : ''}`} onClick={() => tapMajor(m)}>{m}</button>
           ))}
         </div>
       ) : (
         <div className="row">
           {SUBS.map((s) => (
-            <button key={s} className="small" onClick={() => save(pending, s)}>{s} {pending}</button>
+            <button title={`Rate ${s} ${pending}`} key={s} className="small" onClick={() => save(pending, s)}>{s} {pending}</button>
           ))}
-          <button className="small ghost" onClick={() => setPending(null)}>back</button>
+          <button title="Pick a different number" className="small ghost" onClick={() => setPending(null)}>back</button>
         </div>
       )}
       {showOutcome && (
         <div className="row">
           <small>Did you act on it?</small>
-          <button className={`small${outcome === true ? ' selected' : ''}`} onClick={() => setOut(true)}>Yes</button>
-          <button className={`small${outcome === false ? ' selected' : ''}`} onClick={() => setOut(false)}>No</button>
+          <button title="Yes, I acted on this suggestion" className={`small${outcome === true ? ' selected' : ''}`} onClick={() => setOut(true)}>Yes</button>
+          <button title="No, I did not act on it" className={`small${outcome === false ? ' selected' : ''}`} onClick={() => setOut(false)}>No</button>
         </div>
       )}
       {err && <div className="error">{err}</div>}

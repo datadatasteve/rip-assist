@@ -62,23 +62,23 @@ export default function ItemDetail({ kind, id, onClose }) {
 
         <div className="row">
           {item.status === 'active' && <>
-            <button onClick={() => ev('progress')}>+ Log progress</button>
-            <button onClick={() => ev('in_progress')}>▶ In progress</button>
-            <button onClick={waiting}>⏸ Waiting on…</button>
+            <button title="Record that you made progress. Raises momentum" onClick={() => ev('progress')}>+ Log progress</button>
+            <button title="Mark this as what you are working on now" onClick={() => ev('in_progress')}>▶ In progress</button>
+            <button title="Pause this while you wait on someone. Momentum stops decaying" onClick={waiting}>⏸ Waiting on…</button>
           </>}
-          {item.status === 'waiting_on' && <button onClick={() => ev('unblocked')}>▶ Unblocked</button>}
-          {item.status === 'dead' && <button className="primary" onClick={() => patch({ status: 'active', dead_at: null, low_since: null, momentum: Math.max(item.momentum, 30), last_interaction: new Date().toISOString() })}>Revive</button>}
-          {item.status !== 'complete' && <button onClick={() => patch({ status: 'complete', completed_at: new Date().toISOString() })}>✓ Complete</button>}
-          {['complete', 'archived'].includes(item.status) && <button onClick={() => patch({ status: 'active', completed_at: null })}>Reopen</button>}
-          {item.status !== 'archived' && <button onClick={() => patch({ status: 'archived' })}>Archive</button>}
-          <button onClick={() => setEdit(true)}>✎ Edit</button>
-          <button className="danger" onClick={remove}>Delete</button>
+          {item.status === 'waiting_on' && <button title="You are no longer blocked. Resume this item" onClick={() => ev('unblocked')}>▶ Unblocked</button>}
+          {item.status === 'dead' && <button title="Bring this stalled item back to active" className="primary" onClick={() => patch({ status: 'active', dead_at: null, low_since: null, momentum: Math.max(item.momentum, 30), last_interaction: new Date().toISOString() })}>Revive</button>}
+          {item.status !== 'complete' && <button title="Mark this as finished" onClick={() => patch({ status: 'complete', completed_at: new Date().toISOString() })}>✓ Complete</button>}
+          {['complete', 'archived'].includes(item.status) && <button title="Make this active again" onClick={() => patch({ status: 'active', completed_at: null })}>Reopen</button>}
+          {item.status !== 'archived' && <button title="Hide this without deleting it" onClick={() => patch({ status: 'archived' })}>Archive</button>}
+          <button title="Change the title, lane, goal, priority or due date" onClick={() => setEdit(true)}>✎ Edit</button>
+          <button title="Permanently delete this and its chunks" className="danger" onClick={remove}>Delete</button>
         </div>
         {err && <div className="error">{err}</div>}
 
         {kind === 'goal' && (
           <div className="card">
-            <div className="card-head"><h3>Tasks</h3><button className="small" onClick={() => setAddTask(true)}>+ Task</button></div>
+            <div className="card-head"><h3>Tasks</h3><button title="Add a task under this goal" className="small" onClick={() => setAddTask(true)}>+ Task</button></div>
             {childTasks.length === 0 && <div className="empty">No tasks under this goal.</div>}
             <div className="list">
               {childTasks.map((t) => <ItemRow key={t.id} kind="task" item={t} compact />)}
@@ -90,8 +90,8 @@ export default function ItemDetail({ kind, id, onClose }) {
           <div className="card-head">
             <h3>Chunks</h3>
             <div className="row">
-              <button className="small" onClick={() => setDecompose(true)}>✨ AI break down</button>
-              <button className="small" onClick={() => setAddChunk(true)}>+ Chunk</button>
+              <button title="Have the AI split this into small, schedulable chunks" className="small" onClick={() => setDecompose(true)}>✨ AI break down</button>
+              <button title="Add a block of work you can schedule" className="small" onClick={() => setAddChunk(true)}>+ Chunk</button>
             </div>
           </div>
           {myChunks.length === 0 && <div className="empty">No chunks yet. Chunks are schedulable blocks of work.</div>}

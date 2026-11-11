@@ -42,8 +42,8 @@ export default function CheckinDueBanner() {
     <div className="banner">
       <span>♥</span>
       <span style={{ flex: 1 }}>{due.trigger === 'random' ? 'Random check-in' : 'Scheduled check-in'} — how's it going?</span>
-      <button className="small primary" onClick={() => nav(`/checkin?trigger=${due.trigger}`)}>Check in</button>
-      <button className="small ghost" onClick={() => setHidden(due.t)}>Later</button>
+      <button title="Start your check-in now" className="small primary" onClick={() => nav(`/checkin?trigger=${due.trigger}`)}>Check in</button>
+      <button title="Remind me later" className="small ghost" onClick={() => setHidden(due.t)}>Later</button>
     </div>
   )
 }

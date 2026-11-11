@@ -28,9 +28,9 @@ def _out(r: ai_provider.AIResponse, parsed=None) -> dict:
 
 async def _run(uid: str, prompt: str, feature: str, want_json: bool = True) -> dict:
     try:
-        r = await ai_provider.complete(uid, prompt, feature)
+        r = await ai_provider.complete(uid, prompt, feature, want_json=want_json)
     except AllProvidersFailed as e:
-        raise HTTPException(503, str(e))
+        raise HTTPException(503, e.detail())
     return _out(r, parse_json(r.content) if want_json else None)
 
 

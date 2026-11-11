@@ -6,7 +6,7 @@ function MicButton({ value, onChange }) {
   const v = useVoice((text) => onChange(value ? `${value.replace(/\s+$/, '')} ${text}` : text))
   if (!voiceSupported) return null
   return (
-    <button
+    <button title="Speak instead of typing"
       type="button"
       className={`mic${v.listening ? ' on' : ''}`}
       onClick={v.toggle}

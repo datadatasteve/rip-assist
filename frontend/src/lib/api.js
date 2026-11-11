@@ -18,7 +18,13 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
   let json
   try { json = text ? JSON.parse(text) : null } catch { json = { detail: text } }
   if (!res.ok) {
-    const msg = typeof json?.detail === 'string' ? json.detail : JSON.stringify(json?.detail || json)
+    const d = json?.detail
+    if (d && typeof d === 'object' && d.message) {
+      // Backend sent a plain-language message (AI failures); keep per-model details for Dev mode.
+      const e = new Error(d.message); e.attempts = d.attempts || []; e.status = res.status
+      throw e
+    }
+    const msg = typeof d === 'string' ? d : JSON.stringify(d || json)
     throw new Error(`${res.status}: ${msg}`)
   }
   return json

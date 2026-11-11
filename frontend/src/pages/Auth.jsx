@@ -20,7 +20,7 @@ export default function Auth() {
         if (error) throw error
         if (!data.session) setMsg('Check your email to confirm your account, then sign in.')
       } else if (mode === 'reset') {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + import.meta.env.BASE_URL + '?reset=1#/' })
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + import.meta.env.BASE_URL })
         if (error) throw error
         setMsg('Password reset email sent.')
       } else {
@@ -37,8 +37,8 @@ export default function Auth() {
         <p className="muted">Your planning hub.</p>
         {!supabaseConfigured && <div className="banner danger">VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are not set. See docs/startup.md.</div>}
         <div className="seg" style={{ margin: '10px 0 14px' }}>
-          <button className={mode === 'signin' ? 'selected' : ''} onClick={() => setMode('signin')}>Sign in</button>
-          <button className={mode === 'signup' ? 'selected' : ''} onClick={() => setMode('signup')}>Sign up</button>
+          <button title="Sign in to an existing account" className={mode === 'signin' ? 'selected' : ''} onClick={() => setMode('signin')}>Sign in</button>
+          <button title="Create a new account" className={mode === 'signup' ? 'selected' : ''} onClick={() => setMode('signup')}>Sign up</button>
         </div>
         <form className="form" onSubmit={submit}>
           <label className="field"><span>Email</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
@@ -49,8 +49,8 @@ export default function Auth() {
           )}
           {err && <div className="error">{err}</div>}
           {msg && <div className="banner">{msg}</div>}
-          <button className="primary" disabled={busy}>{busy ? '…' : mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : 'Sign in'}</button>
-          {mode === 'signin' && <button type="button" className="ghost small" onClick={() => setMode('reset')}>Forgot password?</button>}
+          <button title="Submit" className="primary" disabled={busy}>{busy ? '…' : mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : 'Sign in'}</button>
+          {mode === 'signin' && <button title="Get an email to reset your password" type="button" className="ghost small" onClick={() => setMode('reset')}>Forgot password?</button>}
         </form>
       </div>
     </div>

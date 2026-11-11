@@ -33,7 +33,7 @@ export default function Dashboard() {
         <div className="row">
           {lastMood && <span className={`pill ${lastMood.mood}`} title="Last check-in mood">mood · energy {lastMood.energy}</span>}
           <span className="pill" title="AI spend today">AI ${costToday.toFixed(costToday < 1 ? 4 : 2)} today</span>
-          <button className="primary" onClick={() => nav('/checkin?trigger=on_demand')}>Quick check-in</button>
+          <button title="Log how you are doing right now" className="primary" onClick={() => nav('/checkin?trigger=on_demand')}>Quick check-in</button>
         </div>
       </div>
       {recommended && (

@@ -8,6 +8,7 @@ import { Input } from '../shared/Field'
 import Modal from '../shared/Modal'
 import Rating from '../shared/Rating'
 import { scheduledSoon } from './ChunkForm'
+import AiError from '../shared/AiError'
 
 // AI chunk decomposition: proposes chunks; nothing is saved until "Add chunks".
 export default function DecomposeDialog({ parent, onClose }) {
@@ -23,7 +24,7 @@ export default function DecomposeDialog({ parent, onClose }) {
     setBusy(true); setErr(null)
     try {
       setRes(await ai.decompose({ goal_id: parent.id, total_minutes: total ? Number(total) : null, days: Number(days) || 7, include_calendar_details: useCal }))
-    } catch (e) { setErr(e.message) } finally { setBusy(false) }
+    } catch (e) { setErr(e) } finally { setBusy(false) }
   }
 
   async function accept() {
@@ -49,7 +50,7 @@ export default function DecomposeDialog({ parent, onClose }) {
       if (soon) momentumEvent('chunk', soon.id, 'scheduled_soon')
       if (res.interaction_id) await db.update('ai_interactions', res.interaction_id, { outcome_followed: true }).catch(() => {})
       onClose()
-    } catch (e) { setErr(e.message) }
+    } catch (e) { setErr(e) }
   }
 
   const list = res?.parsed?.chunks
@@ -61,8 +62,8 @@ export default function DecomposeDialog({ parent, onClose }) {
           <Input label="Days available" type="number" value={days} onChange={setDays} />
         </div>
         <label className="check"><input type="checkbox" checked={useCal} onChange={(e) => setUseCal(e.target.checked)} /> Share today's calendar events with the AI for this request</label>
-        <button className="primary" onClick={run} disabled={busy}>{busy ? 'Thinking…' : res ? 'Try again' : 'Suggest chunks'}</button>
-        {err && <div className="error">{err}</div>}
+        <button title="Ask the AI to suggest chunks" className="primary" onClick={run} disabled={busy}>{busy ? 'Thinking…' : res ? 'Try again' : 'Suggest chunks'}</button>
+        {err && <AiError error={err} />}
         {res && (
           <div className="card">
             <small>{res.provider} · {res.model} · {res.latency_ms}ms</small>
@@ -76,12 +77,12 @@ export default function DecomposeDialog({ parent, onClose }) {
                 ))}
                 <small>Total: {minutesLabel(list.reduce((s, c) => s + (Number(c.duration_minutes) || 0), 0))}. {res.parsed.rationale}</small>
               </div>
-            ) : <pre>{res.content}</pre>}
+            ) : <AiError raw={res.content} />}
             <hr className="divider" />
             <Rating interactionId={res.interaction_id} showOutcome={false} />
           </div>
         )}
-        {list?.length > 0 && <button className="primary" onClick={accept}>Add {list.length} chunks</button>}
+        {list?.length > 0 && <button title="Add these chunks to the item" className="primary" onClick={accept}>Add {list.length} chunks</button>}
       </div>
     </Modal>
   )

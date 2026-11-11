@@ -8,6 +8,7 @@ import { ai } from '../lib/ai'
 import { api } from '../lib/api'
 import { currentSubscription, guessDeviceLabel, pushSupported, subscribePush } from '../lib/push'
 import { relative } from '../lib/time'
+import AiError from '../components/shared/AiError'
 
 const MOODS = [
   { v: 'green', label: 'On track', icon: '●' },
@@ -50,7 +51,7 @@ export default function CheckIn() {
       const r = await api('/api/checkins', { method: 'POST', body: { mood, energy, reflection: refl || null, notes: notes || null, triggered_by: trig } })
       checkins.merge(r.checkin)
       setResult(r)
-      ai.checkinReply(r.checkin.id).then(setReply).catch((e) => setReplyErr(e.message))
+      ai.checkinReply(r.checkin.id).then(setReply).catch((e) => setReplyErr(e))
     } catch (e) { setErr(e.message) } finally { setBusy(false) }
   }
 
@@ -67,7 +68,7 @@ export default function CheckIn() {
     const sig = result.checkin.behavioral_signals || {}
     return (
       <>
-        <div className="topbar"><h1>Checked in</h1><button onClick={() => nav('/')}>Done</button></div>
+        <div className="topbar"><h1>Checked in</h1><button title="Back to Today" onClick={() => nav('/')}>Done</button></div>
         <div className="card">
           <div className="row"><span className={`pill ${result.checkin.mood}`}>{MOODS.find((m) => m.v === result.checkin.mood)?.label}</span><span className="pill">energy {result.checkin.energy}/5</span><span className="pill">{trig.replace('_', ' ')}</span></div>
           <small style={{ display: 'block', marginTop: 8 }}>
@@ -78,7 +79,7 @@ export default function CheckIn() {
         <div className="card">
           <h3>rip-assist</h3>
           {!reply && !replyErr && <small>Thinking…</small>}
-          {replyErr && <div className="error">AI unavailable: {replyErr}</div>}
+          {replyErr && <AiError error={replyErr} />}
           {reply && (
             <>
               <p style={{ whiteSpace: 'pre-wrap' }}>{reply.reply}</p>
@@ -93,8 +94,8 @@ export default function CheckIn() {
             <b>Get check-in reminders on this device?</b>
             <p><small>Used for scheduled check-ins, momentum alerts and plan warnings. You can change this in Settings.</small></p>
             <div className="row">
-              <button className="primary" onClick={enablePush}>Enable notifications</button>
-              <button onClick={() => { setPushAsk(false); updateSettings({ push_prompted: true }).catch(() => {}) }}>Not now</button>
+              <button title="Get check-in reminders on this device" className="primary" onClick={enablePush}>Enable notifications</button>
+              <button title="Skip notifications for now" onClick={() => { setPushAsk(false); updateSettings({ push_prompted: true }).catch(() => {}) }}>Not now</button>
             </div>
           </div>
         )}
@@ -111,7 +112,7 @@ export default function CheckIn() {
       body: (
         <div className="mood-row">
           {MOODS.map((m) => (
-            <button key={m.v} className={`mood ${m.v}${mood === m.v ? ' selected' : ''}`} onClick={() => { setMood(m.v); setStep(1) }}>
+            <button title={`I am feeling ${m.v.replace('_', ' ')}`} key={m.v} className={`mood ${m.v}${mood === m.v ? ' selected' : ''}`} onClick={() => { setMood(m.v); setStep(1) }}>
               <span style={{ fontSize: 22, color: `var(--${m.v})` }}>{m.icon}</span>{m.label}
             </button>
           ))}
@@ -138,7 +139,7 @@ export default function CheckIn() {
         <div className="stack">
           <div className="row">
             {ACTIVITIES.map((a) => (
-              <button key={a} className={`small${acts.includes(a) ? ' selected' : ''}`} onClick={() => setActs((s) => (s.includes(a) ? s.filter((x) => x !== a) : [...s, a]))}>{a}</button>
+              <button title="Tap to include this in your reflection" key={a} className={`small${acts.includes(a) ? ' selected' : ''}`} onClick={() => setActs((s) => (s.includes(a) ? s.filter((x) => x !== a) : [...s, a]))}>{a}</button>
             ))}
           </div>
           <TextField value={reflection} onChange={setReflection} multiline placeholder="Anything else? (optional)" />
@@ -163,10 +164,10 @@ export default function CheckIn() {
         {s.body}
         {err && <div className="error" style={{ marginTop: 8 }}>{err}</div>}
         <div className="row" style={{ marginTop: 16, justifyContent: 'space-between' }}>
-          <button className="ghost" onClick={() => (step === 0 ? nav(-1) : setStep(step - 1))}>{step === 0 ? 'Cancel' : 'Back'}</button>
+          <button title={step === 0 ? 'Leave the check-in' : 'Go to the previous step'} className="ghost" onClick={() => (step === 0 ? nav(-1) : setStep(step - 1))}>{step === 0 ? 'Cancel' : 'Back'}</button>
           {step < steps.length - 1
-            ? <button className="primary" disabled={!s.ok} onClick={() => setStep(step + 1)}>Next</button>
-            : <button className="primary" disabled={busy || !mood || !energy} onClick={submit}>{busy ? 'Saving…' : 'Submit'}</button>}
+            ? <button title="Go to the next step" className="primary" disabled={!s.ok} onClick={() => setStep(step + 1)}>Next</button>
+            : <button title="Save this check-in" className="primary" disabled={busy || !mood || !energy} onClick={submit}>{busy ? 'Saving…' : 'Submit'}</button>}
         </div>
       </div>
     </>

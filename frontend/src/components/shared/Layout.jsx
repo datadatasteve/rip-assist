@@ -48,7 +48,7 @@ export default function Layout({ children }) {
       </main>
 
       {!onCheckin && (
-        <button className="fab primary" onClick={() => nav('/checkin?trigger=on_demand')} aria-label="Quick check-in">
+        <button title="Log how you are doing right now" className="fab primary" onClick={() => nav('/checkin?trigger=on_demand')} aria-label="Quick check-in">
           ♥ Check-in
         </button>
       )}
